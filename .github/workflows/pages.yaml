@@ -29,9 +29,10 @@ jobs:
           path: swagger-ui
       - name: Copy from swagger-ui
         run: mkdir ./out && cp swagger-ui/dist/* ./out
+      - name: Edit Default URL
+        run: sed -i 's#https://petstore.swagger.io/v2/swagger.json#swagger.yaml#g' ./out/swagger-initializer.js
       - name: Copy from docs/api
-        run: cp main/docs/api/swagger.yaml ./out
-      
+        run: cp docs/api/swagger.yaml ./out
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4

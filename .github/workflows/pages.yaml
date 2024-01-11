@@ -1,0 +1,53 @@
+name: Deploy Swagger UI site to Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout Swagger UI
+        uses: actions/checkout@v3
+        with:
+          repository: swagger-api/swagger-ui
+          ref: 'v5.11.0'
+          path: swagger-ui
+      - name: Copy from swagger-ui
+        run: mkdir ./out && cp swagger-ui/dist/* ./out
+      - name: Copy from docs/api
+        run: cp main/docs/api/swagger.yaml ./out
+      
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
